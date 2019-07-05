@@ -24,11 +24,28 @@ namespace WebStore.Services
 			if (employee is null)
 				throw new ArgumentNullException(nameof(employee));
 
-			if (_employees.All(e => e.Id != employee.Id))
+			if (!_employees.Contains(employee) && _employees.All(e => e.Id != employee.Id))
 			{
 				employee.Id = _employees.Count > 0 ? _employees.Max(e => e.Id) + 1 : 1;
 				_employees.Add(employee);
 			}
+		}
+
+		public Employee Update(int id, Employee employee)
+		{
+			if (employee is null)
+				throw new ArgumentNullException(nameof(employee));
+
+			var dbEmployee = GetById(id);
+			if (dbEmployee is null) throw new InvalidOperationException($"Сотрудник с id {id} не найден");
+
+			dbEmployee.Name = employee.Name;
+			dbEmployee.SurName = employee.SurName;
+			dbEmployee.Patronymic = employee.Patronymic;
+			dbEmployee.Age = employee.Age;
+			dbEmployee.StartWork = employee.StartWork;
+
+			return dbEmployee;
 		}
 
 		public void Delete(int id)

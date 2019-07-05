@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using WebStore.DAL.Context;
+using WebStore.Domain.DTO.Order;
 using WebStore.Domain.Entities;
 using WebStore.Domain.ViewModels.Cart;
 using WebStore.Domain.ViewModels.Order;
@@ -22,19 +23,37 @@ namespace WebStore.Services
 			_userManager = userManager;
 		}
 
-		public IEnumerable<Order> GetUserOrders(string userName) =>
-			_db.Orders
+		public IEnumerable<OrderDTO> GetUserOrders(string userName)
+		{
+			return _db.Orders
 				.Include(order => order.User)
 				.Include(order => order.OrderItems)
 				.Where(order => order.User.UserName == userName)
+				.Select(o => OrderToDTO(o))
 				.ToArray();
-
-		public Order GetOrderById(int id)
-		{
-			return _db.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id);
 		}
 
-		public Order CreateOrder(OrderViewModel orderModel, CartViewModel cartModel, string userName)
+		private OrderDTO OrderToDTO(Order order)
+		{
+			return new OrderDTO
+			{
+				Id = order.Id,
+				Name = order.Name,
+				Address = order.Address,
+				Phone = order.Phone,
+				Date = order.Date,
+				OrderItem = order.OrderItems.Select(i => new OrderItemDTO { Id = i.Id, Price = i.Price, Quantity = i.Quantity })
+			};
+		}
+
+		public OrderDTO GetOrderById(int id)
+		{
+			var order =  _db.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id);
+
+			return order is null ? null : OrderToDTO(order);
+		}
+
+		public OrderDTO CreateOrder(CreateOrderModel orderModel, string userName)
 		{
 			var user = _userManager.FindByNameAsync(userName).Result;
 
@@ -42,27 +61,25 @@ namespace WebStore.Services
 			{
 				var order = new Order
 				{
-					Name = orderModel.Name,
-					Address = orderModel.Address,
-					Phone = orderModel.Phone,
+					Name = orderModel.OrderViewModel.Name,
+					Address = orderModel.OrderViewModel.Address,
+					Phone = orderModel.OrderViewModel.Phone,
 					User = user,
 					Date = DateTime.Now
 				};
 				_db.Orders.Add(order);
 
-				foreach (var item in cartModel.Items)
+				foreach (var item in orderModel.OrderItems)
 				{
-					var productModel = item.Key;
-					var quantity = item.Value;
-					var product = _db.Products.FirstOrDefault(p => p.Id == productModel.Id);
+					var product = _db.Products.FirstOrDefault(p => p.Id == item.Id);
 					if (product is null)
-						throw new InvalidOperationException($"Товар с идентификатором {productModel.Id} в базе данных не найден.");
+						throw new InvalidOperationException($"Товар с идентификатором {item.Id} в базе данных не найден.");
 
 					var orderItem = new OrderItem
 					{
 						Order = order,
 						Price = product.Price,
-						Quantity = quantity,
+						Quantity = item.Quantity,
 						Product = product
 					};
 					_db.OrderItems.Add(orderItem);
@@ -70,7 +87,7 @@ namespace WebStore.Services
 				_db.SaveChanges();
 				transaction.Commit();
 
-				return order;
+				return OrderToDTO(order);
 			}
 		}
 	}
