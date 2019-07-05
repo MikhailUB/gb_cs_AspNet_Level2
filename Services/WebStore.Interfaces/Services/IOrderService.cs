@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using WebStore.Domain.DTO.Order;
 using WebStore.Domain.Entities;
 using WebStore.Domain.ViewModels.Cart;
 using WebStore.Domain.ViewModels.Order;
@@ -7,10 +8,10 @@ namespace WebStore.Interfaces.Services
 {
 	public interface IOrderService
 	{
-		IEnumerable<Order> GetUserOrders(string userName);
+		IEnumerable<OrderDTO> GetUserOrders(string userName);
 
-		Order GetOrderById(int id);
+		OrderDTO GetOrderById(int id);
 
-		Order CreateOrder(OrderViewModel orderModel, CartViewModel cartModel, string userName);
+		OrderDTO CreateOrder(CreateOrderModel orderModel, string userName);
 	}
 }

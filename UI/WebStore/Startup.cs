@@ -6,6 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using WebStore.Clients.Employees;
+using WebStore.Clients.Orders;
+using WebStore.Clients.Products;
 using WebStore.Clients.Values;
 using WebStore.DAL.Context;
 using WebStore.Domain.Entities;
@@ -30,14 +33,18 @@ namespace WebStore
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDbContext<WebStoreContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConection")));
+			services.AddDbContext<WebStoreContext>(options =>
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConection")));
 			services.AddTransient<WebStoreContextInitializer>();
 
-			services.AddSingleton<IEmployeesData, InMemoryEmployeesData>();
+			services.AddSingleton<IEmployeesData, EmployeesClient>();
+			//services.AddSingleton<IEmployeesData, InMemoryEmployeesData>();
+			services.AddScoped<IProductData, ProductsClient>();
 			//services.AddSingleton<IProductData, InMemoryProductData>();
-			services.AddScoped<IProductData, SqlProductData>();
+			//services.AddScoped<IProductData, SqlProductData>();
 			services.AddScoped<ICartService, CookieCartService>();
-			services.AddScoped<IOrderService, SqlOrdersService>();
+			services.AddScoped<IOrderService, OrdersClient>();
+			//services.AddScoped<IOrderService, SqlOrdersService>();
 
 			services.AddTransient<IValuesService, ValuesClient>();
 
