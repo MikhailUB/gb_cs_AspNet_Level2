@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebStore.Clients.Base
 {
-	public abstract class BaseClient
+	public abstract class BaseClient : IDisposable
 	{
 		protected readonly HttpClient _client;
 

@@ -9,6 +9,7 @@ using System;
 using WebStore.Clients.Employees;
 using WebStore.Clients.Orders;
 using WebStore.Clients.Products;
+using WebStore.Clients.Users;
 using WebStore.Clients.Values;
 using WebStore.DAL.Context;
 using WebStore.Domain.Entities;
@@ -33,27 +34,48 @@ namespace WebStore
 		// For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDbContext<WebStoreContext>(options =>
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConection")));
-			services.AddTransient<WebStoreContextInitializer>();
+			//services.AddDbContext<WebStoreContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConection")));
+			//services.AddTransient<WebStoreContextInitializer>();
 
 			services.AddSingleton<IEmployeesData, EmployeesClient>();
-			//services.AddSingleton<IEmployeesData, InMemoryEmployeesData>();
 			services.AddScoped<IProductData, ProductsClient>();
-			//services.AddSingleton<IProductData, InMemoryProductData>();
-			//services.AddScoped<IProductData, SqlProductData>();
 			services.AddScoped<ICartService, CookieCartService>();
 			services.AddScoped<IOrderService, OrdersClient>();
-			//services.AddScoped<IOrderService, SqlOrdersService>();
 
 			services.AddTransient<IValuesService, ValuesClient>();
+
+			/*
+			IUserRoleStore<User>,
+			IUserClaimStore<User>,
+			IUserPasswordStore<User>,
+			IUserTwoFactorStore<User>,
+			IUserEmailStore<User>,
+			IUserPhoneNumberStore<User>,
+			IUserLoginStore<User>,
+			IUserLockoutStore<User>
+			*/
 
 			services.AddIdentity<User, IdentityRole>(options =>
 				{
 					// тут можно сконфигурировать cookies
 				})
-				.AddEntityFrameworkStores<WebStoreContext>()
+				//.AddEntityFrameworkStores<WebStoreContext>()
 				.AddDefaultTokenProviders();
+
+			#region Identity - собственная реализация хранилищ данных на основе WebAPI
+
+			services.AddTransient<IUserStore<User>, UserClient>();
+			services.AddTransient<IUserRoleStore<User>, UserClient>();
+			services.AddTransient<IUserClaimStore<User>, UserClient>();
+			services.AddTransient<IUserPasswordStore<User>, UserClient>();
+			services.AddTransient<IUserTwoFactorStore<User>, UserClient>();
+			services.AddTransient<IUserEmailStore<User>, UserClient>();
+			services.AddTransient<IUserPhoneNumberStore<User>, UserClient>();
+			services.AddTransient<IUserLoginStore<User>, UserClient>();
+			services.AddTransient<IUserLockoutStore<User>, UserClient>();
+
+			services.AddTransient<IRoleStore<IdentityRole>, RoleClient>();
+			#endregion
 
 			services.Configure<IdentityOptions>(config =>
 			{
@@ -98,14 +120,14 @@ namespace WebStore
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, WebStoreContextInitializer db)
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env/*, WebStoreContextInitializer db*/)
 		{
-			db.InitializeAsync().Wait();
+			//db.InitializeAsync().Wait();
 
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
-				//app.UseBrowserLink();
+				app.UseBrowserLink();
 			}
 
 			app.UseStaticFiles();
