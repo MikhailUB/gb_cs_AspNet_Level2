@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -13,12 +7,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Swagger;
-using WebStore.Clients.Employees;
+using System;
+using System.IO;
+using System.Reflection;
 using WebStore.DAL.Context;
 using WebStore.Domain.Entities;
 using WebStore.Interfaces.Services;
+using WebStore.Logger;
 using WebStore.Services;
 using WebStore.Services.Data;
 
@@ -45,6 +41,22 @@ namespace WebStore.ServiceHosting
 				.AddEntityFrameworkStores<WebStoreContext>()
 				.AddDefaultTokenProviders();
 
+			services.Configure<IdentityOptions>(config =>
+			{
+				config.Password.RequiredLength = 3;
+				config.Password.RequireDigit = false;
+				config.Password.RequireLowercase = false;
+				config.Password.RequireUppercase = false;
+				config.Password.RequireNonAlphanumeric = false;
+				config.Password.RequiredUniqueChars = 3;
+
+				config.Lockout.MaxFailedAccessAttempts = 10;
+				config.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+				config.Lockout.AllowedForNewUsers = true;
+
+				config.User.RequireUniqueEmail = false;
+			});
+
 			services.AddSingleton<IEmployeesData, InMemoryEmployeesData>();
 
 			services.AddScoped<IProductData, SqlProductData>();
@@ -64,8 +76,10 @@ namespace WebStore.ServiceHosting
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, WebStoreContextInitializer db)
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env, WebStoreContextInitializer db, ILoggerFactory factory)
 		{
+			factory.AddLog4Net();
+
 			db.InitializeAsync().Wait();
 
 			if (env.IsDevelopment())

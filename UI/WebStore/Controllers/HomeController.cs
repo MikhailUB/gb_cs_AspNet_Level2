@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace WebStore.Controllers
 {
 	public class HomeController : Controller
 	{
-		public IActionResult Index() => View();
+		public IActionResult Index()
+		{
+			//throw new ApplicationException("Тестовое исключение");
+			return View();
+		}
 
 		public IActionResult ContactUs() => View();
 

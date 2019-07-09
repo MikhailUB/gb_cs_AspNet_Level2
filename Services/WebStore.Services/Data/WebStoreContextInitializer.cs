@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using WebStore.DAL.Context;
 using WebStore.Domain.Entities;
@@ -65,10 +67,18 @@ namespace WebStore.Services.Data
 		private async Task InitializeIdentityAsync()
 		{
 			if (!await _roleManager.RoleExistsAsync(User.RoleUser))
-				await _roleManager.CreateAsync(new IdentityRole(User.RoleUser));
+			{
+				var creationResult = await _roleManager.CreateAsync(new IdentityRole(User.RoleUser));
+				if (!creationResult.Succeeded)
+					throw new InvalidOperationException($"Ошибка создания роли пользователя {string.Join(", ", creationResult.Errors.Select(e => e.Description))}");
+			}
 
 			if (!await _roleManager.RoleExistsAsync(User.RoleAdmin))
-				await _roleManager.CreateAsync(new IdentityRole(User.RoleAdmin));
+			{
+				var creationResult = await _roleManager.CreateAsync(new IdentityRole(User.RoleAdmin));
+				if (!creationResult.Succeeded)
+					throw new InvalidOperationException($"Ошибка создания роли администратора {string.Join(", ", creationResult.Errors.Select(e => e.Description))}");
+			}
 
 			if (await _userManager.FindByNameAsync(User.AdminUserName) == null)
 			{
