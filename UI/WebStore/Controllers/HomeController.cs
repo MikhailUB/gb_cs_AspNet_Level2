@@ -13,12 +13,21 @@ namespace WebStore.Controllers
 
 		public IActionResult ContactUs() => View();
 
-		public IActionResult Checkout() => View();
-
 		public IActionResult Blog() => View();
 
 		public IActionResult BlogSingle() => View();
 
-		public IActionResult NotFound() => View();
+		public IActionResult NotFound() => View(); // TODO переименовать в Error404
+
+		public IActionResult ErrorStatusCode(string id)
+		{
+			switch (id)
+			{
+				case "404":
+					return RedirectToAction(nameof(NotFound));
+				default:
+					return Content($"Произошла ошибка с кодом {id}");
+			}
+		}
 	}
 }

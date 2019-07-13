@@ -60,11 +60,11 @@ namespace WebStore.ServiceHosting
 			services.AddSingleton<IEmployeesData, InMemoryEmployeesData>();
 
 			services.AddScoped<IProductData, SqlProductData>();
-			services.AddScoped<ICartService, CookieCartService>();
 			services.AddScoped<IOrderService, SqlOrdersService>();
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddSingleton<ICartService, CookieCartService>();
+			services.AddScoped<ICartService, CartService>();
+			services.AddScoped<ICartStore, CookiesCartStore>();
 
 			services.AddSwaggerGen(opt =>
 			{

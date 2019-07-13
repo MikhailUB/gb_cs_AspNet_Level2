@@ -39,7 +39,8 @@ namespace WebStore
 
 			services.AddSingleton<IEmployeesData, EmployeesClient>();
 			services.AddScoped<IProductData, ProductsClient>();
-			services.AddScoped<ICartService, CookieCartService>();
+			services.AddScoped<ICartService, CartService>();
+			services.AddScoped<ICartStore, CookiesCartStore>();
 			services.AddScoped<IOrderService, OrdersClient>();
 
 			services.AddTransient<IValuesService, ValuesClient>();
@@ -109,7 +110,7 @@ namespace WebStore
 			services.AddAutoMapper(options =>
 			{
 				options.CreateMap<Employee, Employee>();
-			});
+			}, AppDomain.CurrentDomain.GetAssemblies());
 
 			/* или можно так
 			AutoMapper.Mapper.Initialize(options =>
