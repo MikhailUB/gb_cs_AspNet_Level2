@@ -16,18 +16,16 @@ namespace WebStore.Components
 			_productData = productData;
 		}
 
-		public IViewComponentResult Invoke()
+		public IViewComponentResult Invoke(string brandId)
 		{
-			var brands = GetBrands();
+			var brndId = int.TryParse(brandId, out int id) ? id : (int?)null;
 
-			return View(brands);
+			return View(new BrandCompleteViewModel { Brands = GetBrands(), CurrentBrandId = brndId });
 		}
 
 		private IEnumerable<BrandViewModel> GetBrands()
 		{
-			var brands = _productData.GetBrands();
-
-			return brands.Select(b => b.CreateModel());
+			return _productData.GetBrands().Select(b => b.CreateModel());
 		}
 	}
 }

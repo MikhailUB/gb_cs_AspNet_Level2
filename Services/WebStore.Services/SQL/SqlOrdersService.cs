@@ -8,6 +8,7 @@ using WebStore.Domain.DTO.Order;
 using WebStore.Domain.Entities;
 using WebStore.Domain.ViewModels.Order;
 using WebStore.Interfaces.Services;
+using WebStore.Services.Map;
 
 namespace WebStore.Services
 {
@@ -28,28 +29,13 @@ namespace WebStore.Services
 				.Include(order => order.User)
 				.Include(order => order.OrderItems)
 				.Where(order => order.User.UserName == userName)
-				.Select(o => OrderToDTO(o))
+				.Select(OrderOrderDTO.ToDTO)
 				.ToArray();
-		}
-
-		private OrderDTO OrderToDTO(Order order)
-		{
-			return new OrderDTO
-			{
-				Id = order.Id,
-				Name = order.Name,
-				Address = order.Address,
-				Phone = order.Phone,
-				Date = order.Date,
-				OrderItem = order.OrderItems.Select(i => new OrderItemDTO { Id = i.Id, Price = i.Price, Quantity = i.Quantity })
-			};
 		}
 
 		public OrderDTO GetOrderById(int id)
 		{
-			var order =  _db.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id);
-
-			return order is null ? null : OrderToDTO(order);
+			return _db.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id)?.ToDTO();
 		}
 
 		public OrderDTO CreateOrder(CreateOrderModel orderModel, string userName)
@@ -86,7 +72,7 @@ namespace WebStore.Services
 				_db.SaveChanges();
 				transaction.Commit();
 
-				return OrderToDTO(order);
+				return order.ToDTO();
 			}
 		}
 	}

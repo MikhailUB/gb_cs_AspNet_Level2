@@ -22,6 +22,16 @@ namespace WebStore.Clients.Products
 			return Get<List<Brand>>($"{_serviceAddress}/brands");
 		}
 
+		public Section GetSectionById(int id)
+		{
+			return Get<Section>($"{_serviceAddress}/sections/{id}");
+		}
+
+		public Brand GetBrandById(int id)
+		{
+			return Get<Brand>($"{_serviceAddress}/brands/{id}");
+		}
+
 		public IEnumerable<ProductDTO> GetProducts(ProductFilter filter)
 		{
 			var response = Post(_serviceAddress, filter);
