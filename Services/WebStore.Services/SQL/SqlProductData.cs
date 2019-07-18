@@ -5,6 +5,7 @@ using WebStore.DAL.Context;
 using WebStore.Domain.DTO.Product;
 using WebStore.Domain.Entities;
 using WebStore.Interfaces.Services;
+using WebStore.Services.Map;
 
 namespace WebStore.Services
 {
@@ -25,6 +26,10 @@ namespace WebStore.Services
 			//.Include(brand => brand.Products)
 			.AsEnumerable();
 
+		public Section GetSectionById(int id) => _db.Sections.FirstOrDefault(s => s.Id == id);
+
+		public Brand GetBrandById(int id) => _db.Brands.FirstOrDefault(b => b.Id == id);
+
 		public IEnumerable<ProductDTO> GetProducts(ProductFilter filter)
 		{
 			IQueryable<Product> products = _db.Products;
@@ -36,32 +41,15 @@ namespace WebStore.Services
 				if (filter.BrandId != null)
 					products = products.Where(product => product.BrandId == filter.BrandId);
 			}
-			return products.AsEnumerable().Select(p => new ProductDTO
-			{
-				Id = p.Id,
-				Name = p.Name,
-				Order = p.Order,
-				Price = p.Price,
-				ImageUrl = p.ImageUrl,
-				Brand = p.Brand is null ? null : new BrandDTO { Id = p.Brand.Id, Name = p.Brand.Name }
-			});
+			return products.AsEnumerable().Select(ProductProductDTO.ToDTO);
 		}
 
 		public ProductDTO GetProductById(int id)
 		{
-			var p = _db.Products
+			return _db.Products
 				.Include(prod => prod.Brand)
 				.Include(prod => prod.Section)
-				.FirstOrDefault(prod => prod.Id == id);
-			return p is null ? null : new ProductDTO
-			{
-				Id = p.Id,
-				Name = p.Name,
-				Order = p.Order,
-				Price = p.Price,
-				ImageUrl = p.ImageUrl,
-				Brand = p.Brand is null ? null : new BrandDTO { Id = p.Brand.Id, Name = p.Brand.Name }
-			};
+				.FirstOrDefault(product => product.Id == id)?.ToDTO();
 		}
 	}
 }

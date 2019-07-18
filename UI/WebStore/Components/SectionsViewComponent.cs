@@ -16,35 +16,49 @@ namespace WebStore.Components
 			_productData = productData;
 		}
 
-		public IViewComponentResult Invoke()
+		public IViewComponentResult Invoke(string sectionId)
 		{
-			var section = GetSections();
+			var sectId = int.TryParse(sectionId, out int id) ? id : (int?)null;
+			var sections = GetSections(sectId, out int? parentSectionId);
 
-			return View(section);
+			return View(new SectionCompleteViewModel
+			{
+				Sections = sections,
+				CurrentSectionId = sectId,
+				CurrentParentSectionId = parentSectionId
+			});
 		}
 
 		//public async Task<IViewComponentResult> InvokeAsync() { }
 
-		private IEnumerable<SectionViewModel> GetSections()
+		private IEnumerable<SectionViewModel> GetSections(int? sectionId, out int? parentSectionId)
 		{
+			parentSectionId = null;
 			var sections = _productData.GetSections();
 
-			var parents = sections
+			var parentSections = sections
 				.Where(s => s.ParentId == null)
 				.Select(s => s.CreateViewModel())
 				.ToList();
 
-			foreach (var parent in parents)
+			foreach (var parentSection in parentSections)
 			{
 				var childs = sections
-					.Where(s => s.ParentId == parent.Id)
+					.Where(s => s.ParentId == parentSection.Id)
 					.Select(s => s.CreateViewModel());
-				parent.ChildSections.AddRange(childs);
-				parent.ChildSections.Sort((a, b) => Comparer<int>.Default.Compare(a.Order, b.Order));
-			}
-			parents.Sort((a, b) => Comparer<int>.Default.Compare(a.Order, b.Order));
 
-			return parents;
+				foreach (var childSection in childs)
+				{
+					if (childSection.Id == sectionId)
+						parentSectionId = parentSection.Id;
+
+					parentSection.ChildSections.Add(childSection);
+				}
+				parentSection.ChildSections.Sort((a, b) => Comparer<int>.Default.Compare(a.Order, b.Order));
+			}
+			parentSections.Sort((a, b) => Comparer<int>.Default.Compare(a.Order, b.Order));
+
+			return parentSections;
 		}
 	}
 }
