@@ -20,7 +20,7 @@ namespace WebStore.Controllers
 
 		public IActionResult Shop(int? sectionId, int? brandId, int page = 1)
 		{
-			var pageSize = int.Parse(_configuration["PageSize"]);
+			var pageSize = int.Parse(_configuration["PageSize"] ?? "999");
 
 			var pagedProducts = _productData.GetProducts(new ProductFilter
 			{
