@@ -32,10 +32,10 @@ namespace WebStore.Clients.Products
 			return Get<Brand>($"{_serviceAddress}/brands/{id}");
 		}
 
-		public IEnumerable<ProductDTO> GetProducts(ProductFilter filter)
+		public PagedProductsDTO GetProducts(ProductFilter filter)
 		{
 			var response = Post(_serviceAddress, filter);
-			return response.Content.ReadAsAsync<IEnumerable<ProductDTO>>().Result;
+			return response.Content.ReadAsAsync<PagedProductsDTO>().Result;
 		}
 
 		public ProductDTO GetProductById(int id)

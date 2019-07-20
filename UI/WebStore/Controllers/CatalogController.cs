@@ -1,34 +1,40 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Linq;
 using WebStore.Domain.Entities;
 using WebStore.Domain.ViewModels.Product;
 using WebStore.Interfaces.Services;
-using WebStore.Services.Map;
 
 namespace WebStore.Controllers
 {
 	public class CatalogController : Controller
 	{
 		private readonly IProductData _productData;
+		private readonly IConfiguration _configuration;
 
-		public CatalogController(IProductData ProductData)
+		public CatalogController(IProductData productData, IConfiguration configuration)
 		{
-			_productData = ProductData;
+			_productData = productData;
+			_configuration = configuration;
 		}
 
-		public IActionResult Shop(int? sectionId, int? brandId)
+		public IActionResult Shop(int? sectionId, int? brandId, int page = 1)
 		{
-			var products = _productData.GetProducts(new ProductFilter
+			var pageSize = int.Parse(_configuration["PageSize"]);
+
+			var pagedProducts = _productData.GetProducts(new ProductFilter
 			{
 				SectionId = sectionId,
-				BrandId = brandId
+				BrandId = brandId,
+				Page = page,
+				PageSize = pageSize
 			});
 
 			var model = new CatalogViewModel
 			{
 				BrandId = brandId,
 				SectionId = sectionId,
-				Products = products
+				Products = pagedProducts.Products
 					.Select(p => new ProductViewModel
 					{
 						Id = p.Id,
@@ -37,8 +43,14 @@ namespace WebStore.Controllers
 						Order = p.Order,
 						Price = p.Price,
 						ImageUrl = p.ImageUrl
-					})
-				//.Select(p => p.CreateViewModel())
+					}),
+				PageModel = new PageViewModel
+				{
+					PageSize = pageSize,
+					PageNumber = page,
+					TotalItems = pagedProducts.TotalCount
+				}
+
 			};
 
 			return View(model);

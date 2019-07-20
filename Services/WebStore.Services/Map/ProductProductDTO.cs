@@ -1,4 +1,6 @@
-﻿using WebStore.Domain.DTO.Product;
+﻿using System.Collections.Generic;
+using System.Linq;
+using WebStore.Domain.DTO.Product;
 using WebStore.Domain.Entities;
 
 namespace WebStore.Services.Map
@@ -42,5 +44,7 @@ namespace WebStore.Services.Map
 		public static ProductDTO ToDTO(this Product product) => product?.CopyTo(new ProductDTO());
 
 		public static Product ToProduct(this ProductDTO dto) => dto?.CopyTo(new Product());
+
+		public static IEnumerable<ProductDTO> ToDTO(this IEnumerable<Product> Products) => Products.Select(ToDTO);
 	}
 }

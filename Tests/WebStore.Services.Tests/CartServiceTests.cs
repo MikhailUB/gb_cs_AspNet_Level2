@@ -219,7 +219,7 @@ namespace WebStore.Services.Tests
 			var productDataMock = new Mock<IProductData>();
 			productDataMock
 				.Setup(c => c.GetProducts(It.IsAny<ProductFilter>()))
-				.Returns(products);
+				.Returns(new PagedProductsDTO { Products = products, TotalCount = products.Count });
 
 			var cartStoreMock = new Mock<ICartStore>();
 			cartStoreMock

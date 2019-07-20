@@ -73,7 +73,7 @@ namespace WebStore.Services
 				Ids = _cartStore.Cart.Items.Select(item => item.ProductId).ToList()
 			});
 
-			var productsViewModels = products.Select(p => new ProductViewModel
+			var productsViewModels = products.Products.Select(p => new ProductViewModel
 			{
 				Id = p.Id,
 				Name = p.Name,

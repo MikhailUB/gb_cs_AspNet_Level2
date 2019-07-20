@@ -18,18 +18,16 @@ namespace WebStore.Services
 
 		public Brand GetBrandById(int id) => TestData.Brands.FirstOrDefault(b => b.Id == id);
 
-		public IEnumerable<ProductDTO> GetProducts(ProductFilter filter)
+		public PagedProductsDTO GetProducts(ProductFilter filter)
 		{
 			IEnumerable<Product> products = TestData.Products;
-			if (filter != null)
-			{
-				if (filter.BrandId != null)
-					products = products.Where(product => product.BrandId == filter.BrandId);
+			if (filter?.BrandId != null)
+				products = products.Where(product => product.BrandId == filter.BrandId);
 
-				if (filter.SectionId != null)
-					products = products.Where(product => product.SectionId == filter.SectionId);
-			}
-			return products.Select(ProductProductDTO.ToDTO);
+			if (filter?.SectionId != null)
+				products = products.Where(product => product.SectionId == filter.SectionId);
+
+			return new PagedProductsDTO { Products = products.ToDTO() };
 		}
 
 		public ProductDTO GetProductById(int id) => TestData.Products.FirstOrDefault(product => product.Id == id)?.ToDTO();
