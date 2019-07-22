@@ -30,18 +30,28 @@ namespace WebStore.Services
 
 		public Brand GetBrandById(int id) => _db.Brands.FirstOrDefault(b => b.Id == id);
 
-		public IEnumerable<ProductDTO> GetProducts(ProductFilter filter)
+		public PagedProductsDTO GetProducts(ProductFilter filter)
 		{
 			IQueryable<Product> products = _db.Products;
-			if (!(filter is null))
-			{
-				if (filter.SectionId != null)
-					products = products.Where(product => product.SectionId == filter.SectionId);
 
-				if (filter.BrandId != null)
-					products = products.Where(product => product.BrandId == filter.BrandId);
-			}
-			return products.AsEnumerable().Select(ProductProductDTO.ToDTO);
+			if (filter?.SectionId != null)
+				products = products.Where(product => product.SectionId == filter.SectionId);
+
+			if (filter?.BrandId != null)
+				products = products.Where(product => product.BrandId == filter.BrandId);
+
+			var totalCount = products.Count();
+
+			if (filter?.PageSize != null)
+				products = products
+					.Skip((filter.Page - 1) * (int)filter.PageSize)
+					.Take(filter.PageSize.Value);
+
+			return new PagedProductsDTO
+			{
+				Products = products.AsEnumerable().ToDTO(),
+				TotalCount = totalCount
+			};
 		}
 
 		public ProductDTO GetProductById(int id)
@@ -49,7 +59,8 @@ namespace WebStore.Services
 			return _db.Products
 				.Include(prod => prod.Brand)
 				.Include(prod => prod.Section)
-				.FirstOrDefault(product => product.Id == id)?.ToDTO();
+				.FirstOrDefault(product => product.Id == id)
+				.ToDTO();
 		}
 	}
 }

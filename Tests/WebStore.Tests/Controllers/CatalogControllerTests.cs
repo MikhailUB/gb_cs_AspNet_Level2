@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Linq;
@@ -44,7 +45,8 @@ namespace WebStore.Tests.Controllers
 					Brand = new BrandDTO { Id = 1, Name = $"Brand of item id {id}" }
 				});
 
-			var controller = new CatalogController(productDataMock.Object);
+			var configurationMock = new Mock<IConfiguration>();
+			var controller = new CatalogController(productDataMock.Object, configurationMock.Object);
 
 			#endregion
 
@@ -77,7 +79,8 @@ namespace WebStore.Tests.Controllers
 				.Setup(p => p.GetProductById(It.IsAny<int>()))
 				.Returns(default(ProductDTO));
 
-			var controller = new CatalogController(productDataMock.Object);
+			var configurationMock = new Mock<IConfiguration>();
+			var controller = new CatalogController(productDataMock.Object, configurationMock.Object);
 
 			var result = controller.ProductDetails(1);
 
@@ -87,34 +90,38 @@ namespace WebStore.Tests.Controllers
 		[TestMethod]
 		public void Shop_Returns_Correct_View()
 		{
-			var resultProducts = new[]
+			var resultProducts = new PagedProductsDTO
 			{
-				new ProductDTO
+				TotalCount = 3,
+				Products = new[]
 				{
-					Id = 1,
-					Name = "Product 1",
-					Order = 0,
-					ImageUrl = "Product1.png",
-					Price= 10m,
-					Brand = new BrandDTO { Id = 1, Name = "Brand of Product 1" }
-				},
-				new ProductDTO
-				{
-					Id = 2,
-					Name = "Product 2",
-					Order = 0,
-					ImageUrl = "Product2.png",
-					Price= 10m,
-					Brand = new BrandDTO { Id = 1, Name = "Brand of Product 2" }
-				},
-				new ProductDTO
-				{
-					Id = 3,
-					Name = "Product 3",
-					Order = 0,
-					ImageUrl = "Product3.png",
-					Price= 10m,
-					Brand = new BrandDTO { Id = 1, Name = "Brand of Product 3" }
+					new ProductDTO
+					{
+						Id = 1,
+						Name = "Product 1",
+						Order = 0,
+						ImageUrl = "Product1.png",
+						Price= 10m,
+						Brand = new BrandDTO { Id = 1, Name = "Brand of Product 1" }
+					},
+					new ProductDTO
+					{
+						Id = 2,
+						Name = "Product 2",
+						Order = 0,
+						ImageUrl = "Product2.png",
+						Price= 10m,
+						Brand = new BrandDTO { Id = 1, Name = "Brand of Product 2" }
+					},
+					new ProductDTO
+					{
+						Id = 3,
+						Name = "Product 3",
+						Order = 0,
+						ImageUrl = "Product3.png",
+						Price= 10m,
+						Brand = new BrandDTO { Id = 1, Name = "Brand of Product 3" }
+					}
 				}
 			};
 
@@ -123,7 +130,8 @@ namespace WebStore.Tests.Controllers
 				.Setup(p => p.GetProducts(It.IsAny<ProductFilter>()))
 				.Returns<ProductFilter>(filter => resultProducts);
 
-			var controller = new CatalogController(productDataMock.Object);
+			var configurationMock = new Mock<IConfiguration>();
+			var controller = new CatalogController(productDataMock.Object, configurationMock.Object);
 
 			var expected = new { SectionId = 1, BrandId = 5 };
 
@@ -132,11 +140,11 @@ namespace WebStore.Tests.Controllers
 			var viewResult = Assert.IsType<ViewResult>(result);
 			var model = Assert.IsAssignableFrom<CatalogViewModel>(viewResult.ViewData.Model);
 
-			Assert.Equal(resultProducts.Length, model.Products.Count());
+			Assert.Equal(resultProducts.Products.Count(), model.Products.Count());
 			Assert.Equal(expected.BrandId, model.BrandId);
 			Assert.Equal(expected.SectionId, model.SectionId);
 
-			Assert.Equal(resultProducts[0].Brand.Name, model.Products.First().Brand);
+			Assert.Equal(resultProducts.Products.First().Brand.Name, model.Products.First().Brand);
 		}
 	}
 }

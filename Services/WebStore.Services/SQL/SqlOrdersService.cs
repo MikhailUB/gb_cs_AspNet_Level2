@@ -29,13 +29,15 @@ namespace WebStore.Services
 				.Include(order => order.User)
 				.Include(order => order.OrderItems)
 				.Where(order => order.User.UserName == userName)
-				.Select(OrderOrderDTO.ToDTO)
-				.ToArray();
+				.ToDTO();
 		}
 
 		public OrderDTO GetOrderById(int id)
 		{
-			return _db.Orders.Include(o => o.OrderItems).FirstOrDefault(o => o.Id == id)?.ToDTO();
+			return _db.Orders
+				.Include(o => o.OrderItems)
+				.FirstOrDefault(o => o.Id == id)
+				.ToDTO();
 		}
 
 		public OrderDTO CreateOrder(CreateOrderModel orderModel, string userName)
